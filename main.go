@@ -1,8 +1,8 @@
 package main
 
 import (
-	"./qry"
 	"flag"
+	"github.com/sandeeprenjith/dnsblast/qry"
 	"log"
 	"os"
 	"time"
