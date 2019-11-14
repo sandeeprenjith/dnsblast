@@ -16,10 +16,10 @@ func checkpoint(n int) {
 
 func main() {
 	// Getting input from user
-	server := flag.String("server", "invalid", "The address of the target server")
-	num := flag.Int("rate", 100, "Packets per second to send")
-	port := flag.String("port", "53", "The destination UDP port")
-	duration := flag.Int("len", 60, "Duration to run load")
+	server := flag.String("s", "invalid", "The address of the target server")
+	num := flag.Int("r", 100, "Packets per second to send")
+	port := flag.String("p", "53", "The destination UDP port")
+	duration := flag.Int("l", 60, "Duration to run load")
 	flag.Parse()
 	if *server == "invalid" {
 		flag.PrintDefaults()
