@@ -1,7 +1,6 @@
 # DNS Blast
 > A DNS performance testing utility
 
-**Note:** Not in a usable stage yet 
 
 *Tue Oct 29 21:37:12 DST 2019*
 
