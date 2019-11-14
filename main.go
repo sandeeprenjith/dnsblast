@@ -16,12 +16,15 @@ func checkpoint(n int) {
 
 func main() {
 	// Getting input from user
-	server := flag.String("server", "127.0.0.1", "The address of the target server")
+	server := flag.String("server", "invalid", "The address of the target server")
 	num := flag.Int("rate", 100, "Packets per second to send")
 	port := flag.String("port", "53", "The destination UDP port")
 	duration := flag.Int("len", 60, "Duration to run load")
 	flag.Parse()
-
+	if *server == "invalid" {
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
 	limiter := time.Tick(time.Second) // Ticker used for rate limiting packets per second
 
 	// Exit program when the time specified by "-len" is passed.
