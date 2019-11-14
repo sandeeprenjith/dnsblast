@@ -9,10 +9,7 @@
 
 #### Download the executable
 
-| Platform | File |
-| -------- | ---- |
-| Linux x86 | [dnsblast-v1-linux-386.tar.gz](builds/dnsblast-v1-linux-386.tar.gz) |
-
+Go to [downloads](https://github.com/sandeeprenjith/dnsblast/tree/v1/builds)
 
 #### Build for your platform
 
