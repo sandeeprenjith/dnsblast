@@ -7,10 +7,60 @@
 
 ## Installation 
 
+#### Download the executable
+
+| Platform | File |
+| -------- | ---- |
+| Linux x86 | [dnsblast-v1-linux-386.tar.gz](builds/dnsblast-v1-linux-386.tar.gz) |
+
+
+#### Build for your platform
+
+##### Requirements
+
+* go
+
 ```
 go get github.com/sandeeprenjith/dnsblast
 
 ```
+
+#### Build for other platforms 
+
+##### Requirements
+
+* go
+* make
+
+```
+$ git clone https://github.com/sandeeprenjith/dnsblast.git
+$ cd dnsblast
+$ make
+```
+This creates a directory named "builds". The directory contains archives with executables for different platforms. 
+
+```
+╰$ tree builds
+builds
+├ dnsblast-v1-darwin-386.tar.gz
+├ dnsblast-v1-darwin-amd64.tar.gz
+├ dnsblast-v1-linux-386.tar.gz
+├ dnsblast-v1-linux-amd64.tar.gz
+├ dnsblast-v1-linux-arm.tar.gz
+├ dnsblast-v1-linux-arm64.tar.gz
+├ dnsblast-v1-windows-386.tar.gz
+└ dnsblast-v1-windows-amd64.tar.gz
+
+```
+The archives contain the executable for the platform which the name of the archive suggests.
+
+```
+$ tar -tf builds/dnsblast-v1-linux-386.tar.gz
+dnsblast
+$ tar -tf builds/dnsblast-v1-windows-amd64.tar.gz
+dnsblast.exe
+```
+
 
 ## Usage
 
