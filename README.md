@@ -32,21 +32,17 @@ Usage of dnsblast:
 ## Sample Output
 
 ```
-$ dnsblast -server 192.168.130.9 -len 15 -rate 50
-2019/10/29 21:35:24 QPS:  50  Latency:  234.78µs
-2019/10/29 21:35:25 QPS:  50  Latency:  422.745µs
-2019/10/29 21:35:26 QPS:  50  Latency:  382.235µs
-2019/10/29 21:35:27 QPS:  50  Latency:  450.666µs
-2019/10/29 21:35:28 QPS:  50  Latency:  393.156µs
-2019/10/29 21:35:29 QPS:  50  Latency:  436.019µs
-2019/10/29 21:35:30 QPS:  50  Latency:  341.156µs
-2019/10/29 21:35:31 QPS:  50  Latency:  248.568µs
-2019/10/29 21:35:32 QPS:  50  Latency:  391.901µs
-2019/10/29 21:35:33 QPS:  50  Latency:  360.274µs
-2019/10/29 21:35:34 QPS:  50  Latency:  356.764µs
-2019/10/29 21:35:35 QPS:  50  Latency:  380.333µs
-2019/10/29 21:35:36 QPS:  50  Latency:  228.019µs
-2019/10/29 21:35:37 QPS:  50  Latency:  438.137µs
-2019/10/29 21:35:38 QPS:  50  Latency:  428.941µs
+╭nd33p@trv-wl-srenjith ~/go/src/github.com/sandeeprenjith/dnsblast ‹master›
+╰$ go run main.go -server 192.168.130.9 -rate 10000 -len 10
+2019/11/14 14:54:21 QPS:  1892  Latency:  234.101µs
+2019/11/14 14:54:22 QPS:  1867  Latency:  230.924µs
+2019/11/14 14:54:23 QPS:  1827  Latency:  237.156µs
+2019/11/14 14:54:24 QPS:  1865  Latency:  232.912µs
+2019/11/14 14:54:25 QPS:  1814  Latency:  237.668µs
+2019/11/14 14:54:26 QPS:  1872  Latency:  232.288µs
+2019/11/14 14:54:27 QPS:  1726  Latency:  250.058µs
+2019/11/14 14:54:28 QPS:  1831  Latency:  241.003µs
+2019/11/14 14:54:29 QPS:  1858  Latency:  232.634µs
 
 ```
+
