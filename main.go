@@ -38,9 +38,15 @@ func main() {
 	for {
 		responses := make(chan qry.Response, *num) // Channel to hold DNS responses
 		// loop which runs for a maximum of "-rate" specified by user.
+	rateLoop: // Issue #2 rate limit execution. Added to use in break statement.
 		for i := 1; i <= *num; i++ {
-			qname := qry.PQname(3, i)                              // Creating a predictable Qname
-			qry.SimpleQuery(*server, *port, qname, "A", responses) // Query the specified server with the predictable qname
+			select { // Issue #2 Rate limit execution
+			case <-limiter:
+				break rateLoop
+			default:
+				qname := qry.PQname(3, i)                              // Creating a predictable Qname
+				qry.SimpleQuery(*server, *port, qname, "A", responses) // Query the specified server with the predictable qname
+			}
 		}
 		close(responses)
 
@@ -51,7 +57,7 @@ func main() {
 				RTT = append(RTT, resp.Rtt)
 			}
 		}
-		<-limiter // Limit the execution. Will block till 1 second passes
+		//<-limiter // Limit the execution. Will block till 1 second passes
 
 		var sumRTT time.Duration // Varable to hold sum of latency values
 		var avgRTT time.Duration // Variable to hold avg of latency values
