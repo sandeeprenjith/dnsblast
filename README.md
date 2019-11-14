@@ -33,7 +33,7 @@ Usage of dnsblast:
 
 ```
 
-$ dnsblast -server 192.168.130.9 -rate 3000 -len 10
+$ dnsblast -s 192.168.130.9 -r 3000 -l 10
 2019/11/14 14:58:55 QPS:  1858  Latency:  237.799µs
 2019/11/14 14:58:56 QPS:  1858  Latency:  236.285µs
 2019/11/14 14:58:57 QPS:  1847  Latency:  233.041µs
