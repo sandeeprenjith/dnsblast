@@ -9,6 +9,7 @@
 
 #### Download the executable
 
+##### v1
 Go to [downloads](https://github.com/sandeeprenjith/dnsblast/tree/v1/builds)
 
 #### Build for your platform
