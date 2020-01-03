@@ -1,5 +1,7 @@
 # DNS Blast
 > A DNS performance testing utility
+
+
 [![Go Report Card](https://goreportcard.com/badge/github.com/sandeeprenjith/dnsblast)](https://goreportcard.com/report/github.com/sandeeprenjith/dnsblast)
 
 
