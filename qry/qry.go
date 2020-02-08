@@ -9,9 +9,7 @@ import (
 
 func HandleErr(err error) {
 	if err != nil {
-		log.Println(" === Error Handler ===")
 		log.Println(err)
-		log.Println(" === Error Handler ===")
 	}
 }
 
@@ -25,6 +23,7 @@ func SimpleQuery(server string, port string, qname string, qtype string, respons
 		Timeout: 200 * time.Millisecond,
 	}
 	c.SingleInflight = true
+	c.Net = "tcp-tls"
 	ans, rtt, err := c.Exchange(question, s_server)
 	HandleErr(err)
 	var R Response

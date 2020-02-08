@@ -1,0 +1,42 @@
+package main
+
+import (
+	"bufio"
+	"flag"
+	"fmt"
+	"log"
+	"os"
+	"strings"
+)
+
+type Qdata struct {
+	Qname string
+	Qtype string
+}
+
+func panic_err(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func main() {
+	infile := flag.String("f", "", "Input file to read query data from")
+	flag.Parse()
+	qry_data, err := os.Open(*infile)
+	panic_err(err)
+	scanner := bufio.NewScanner(qry_data)
+	var qlist []Qdata
+	for scanner.Scan() {
+		line := scanner.Text()
+		linesplit := strings.Split(line, " ")
+		var qdata Qdata
+		qdata.Qname = strings.ToLower(linesplit[0])
+		qdata.Qtype = strings.ToUpper(linesplit[1])
+		qlist = append(qlist, qdata)
+	}
+	for i := 0; i < len(qlist); i++ {
+		fmt.Println(qlist[i].Qname, qlist[i].Qtype)
+	}
+
+}

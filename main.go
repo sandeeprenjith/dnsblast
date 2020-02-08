@@ -96,7 +96,7 @@ func main() {
 	// Getting input from user
 	server := flag.String("s", "", "[Required] The address of the target server")
 	rate := flag.Int("r", 100, "Packets per second to send")
-	port := flag.String("p", "53", "The destination UDP port")
+	port := flag.String("p", "853", "The destination UDP port")
 	duration := flag.Int("l", 60, "Duration to run load")
 	threads := flag.Int("t", 4, "Number of threads")
 	flag.Parse()
@@ -122,8 +122,9 @@ func main() {
 	for i := 1; i <= *threads; i++ {
 		go send_qry(*server, *rate, *port, *duration, *threads, limiter, res)
 	}
+	fmt.Println("debug: Sleeping")
 	time.Sleep(time.Duration(*duration) * time.Second)
-
+	fmt.Println("debug: after goroutines ") //debug
 	// Iterate over resuls channel and calculate QPS and RTT
 	total_qps = 0
 	total_rtt = 0
