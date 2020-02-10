@@ -21,7 +21,7 @@ type Results struct {
 	RTT time.Duration
 }
 
-func send_qry(server string, rate int, port string, duration int, threads int, limiter <-chan time.Time, res chan Results) {
+func send_qry(server string, rate int, port string, duration int, threads int, limiter <-chan time.Time, res chan Results, ender <-chan time.Time) {
 	var QPS int             // Variable to hold QPS
 	var RTT []time.Duration // Variable to hold Latency
 
@@ -34,62 +34,74 @@ func send_qry(server string, rate int, port string, duration int, threads int, l
 	var avg_avg_rtt time.Duration
 	var avg_total_qps int
 	var final_results Results
-
-	// The eternal for loop runs till program is killed by the ender ticker
-	for {
-		num := rate / threads
-		//		print(string(num))
-		responses := make(chan qry.Response, num) // Channel to hold DNS responses
-		// loop which runs for a maximum of "-rate" specified by user.
-
-	rateLoop: // Issue #2 rate limit execution. Added to use in break statement.
-		for i := 1; i <= num; i++ {
-			select { // Issue #2 Rate limit execution
-			case <-limiter:
-				break rateLoop
-			default:
-				qname := qry.PQname(3, i)                            // Creating a predictable Qname
-				qry.SimpleQuery(server, port, qname, "A", responses) // Query the specified server with the predictable qname
-			}
-		}
-		close(responses)
-
-		// Iterate through the responses channel and if RCODE is NOERROR, increment QPS and append Latency to array
-		for resp := range responses {
-			if resp.Rcode == "NOERROR" {
-				QPS++
-				RTT = append(RTT, resp.Rtt)
-			}
-		}
-		//<-limiter // Limit the execution. Will block till 1 second passes
-
-		// Calculate sum of latency ( for avg calculation) and calculate avg
-		for x := 1; x < len(RTT); x++ {
-			sumRTT = sumRTT + RTT[x]
-		}
-		if sumRTT == 0 {
-			log.Println("No usable results")
-		} else {
-			avgRTT = sumRTT / time.Duration(len(RTT))
-
-			//Send results to a chanel in the type Result
-			result.QPS = QPS
-			result.RTT = avgRTT
-			resultset = append(resultset, result)
-
-			log.Println("QPS: ", QPS, " Latency: ", avgRTT) // Print result per iteration ( minumum rate times/sec)
-			QPS = 0                                         // Reinitialize QPS for next iteration
-			RTT = []time.Duration{time.Duration(0)}         // Reinitialize latency array for next iteration
-		}
-	}
+	var qps_denominator int
 	total_qps = 0
 	total_avg_rtt = 0
 	avg_avg_rtt = 0
+
+mainLoop:
+	// The eternal for loop runs till program is killed by the ender ticker
+
+	for {
+		select { //Break main loop after duration expires
+		case <-ender:
+			break mainLoop
+		default:
+			num := rate / threads
+			//		print(string(num))
+			responses := make(chan qry.Response, num) // Channel to hold DNS responses
+			// loop which runs for a maximum of "-rate" specified by user.
+
+		rateLoop: // Issue #2 rate limit execution. Added to use in break statement.
+			for i := 1; i <= num; i++ {
+				select { // Issue #2 Rate limit execution
+				case <-limiter:
+					break rateLoop
+				default:
+					qname := qry.PQname(3, i)                            // Creating a predictable Qname
+					qry.SimpleQuery(server, port, qname, "A", responses) // Query the specified server with the predictable qname
+				}
+			}
+			close(responses)
+
+			// Iterate through the responses channel and if RCODE is NOERROR, increment QPS and append Latency to array
+			for resp := range responses {
+				if resp.Rcode == "NOERROR" {
+					QPS++
+					RTT = append(RTT, resp.Rtt)
+				}
+			}
+			//<-limiter // Limit the execution. Will block till 1 second passes
+
+			// Calculate sum of latency ( for avg calculation) and calculate avg
+			for x := 1; x < len(RTT); x++ {
+				sumRTT = sumRTT + RTT[x]
+			}
+			if sumRTT == 0 {
+				log.Println("No usable results")
+			} else {
+				avgRTT = sumRTT / time.Duration(len(RTT))
+
+				//Send results to a chanel in the type Result
+				result.QPS = QPS
+				result.RTT = avgRTT
+				resultset = append(resultset, result)
+
+				log.Println("QPS/Thread: ", QPS, " Latency: ", avgRTT) // Print result per iteration ( minumum rate times/sec)
+				QPS = 0                                                // Reinitialize QPS for next iteration
+				RTT = []time.Duration{time.Duration(0)}                // Reinitialize latency array for next iteration
+			}
+		}
+	}
 	for x := range resultset {
 		total_qps = total_qps + resultset[x].QPS
 		total_avg_rtt = total_avg_rtt + resultset[x].RTT
 	}
-	avg_total_qps = total_qps / len(resultset)
+	if len(resultset) == 0 {
+		os.Exit(1)
+	}
+	qps_denominator = len(resultset) / threads
+	avg_total_qps = total_qps / qps_denominator
 	avg_avg_rtt = total_avg_rtt / time.Duration(len(resultset))
 	final_results.QPS = avg_total_qps
 	final_results.RTT = avg_avg_rtt
@@ -113,33 +125,26 @@ func main() {
 
 	var total_qps int
 	var total_rtt time.Duration
-	var avg_rtt time.Duration
-
-	// Exit program when the time specified by "-len" is passed.
+	// Channel which gets a value when the timer specified with duration has expired
+	// Used to end the main forloop in the send_qry function
 	ender := time.Tick(time.Duration(*duration) * time.Second)
-	go func() {
-		<-ender
-		os.Exit(0)
-	}()
-
 	// Create as many goroutines as specified by "-t" argument
 	for i := 1; i <= *threads; i++ {
-		go send_qry(*server, *rate, *port, *duration, *threads, limiter, res)
+		go send_qry(*server, *rate, *port, *duration, *threads, limiter, res, ender)
 	}
-	fmt.Println("debug: Sleeping")
-	time.Sleep(time.Duration(*duration) * time.Second)
-	fmt.Println("debug: after goroutines ") //debug
+	sleepval := *duration + 1
+	time.Sleep(time.Duration(sleepval) * time.Second)
 	// Iterate over resuls channel and calculate QPS and RTT
 	total_qps = 0
 	total_rtt = 0
 
 	close(res)
 	for each_res := range res {
-		fmt.Println(each_res.QPS)
-		fmt.Println(each_res.RTT)
 		total_qps = total_qps + each_res.QPS
 		total_rtt = total_rtt + each_res.RTT
 	}
-	avg_rtt = total_rtt / time.Duration(*threads)
-	log.Println("Final QPS:", total_qps, "Final RTT:", avg_rtt)
+	fmt.Println("#################################################")
+	fmt.Println("Final QPS:", total_qps, "Final RTT:", total_rtt)
+	fmt.Println("#################################################")
+	os.Exit(0)
 }
