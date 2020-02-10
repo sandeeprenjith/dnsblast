@@ -2,6 +2,9 @@
 > A DNS performance testing utility
 
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/sandeeprenjith/dnsblast)](https://goreportcard.com/report/github.com/sandeeprenjith/dnsblast)
+
+
 *Tue Oct 29 21:37:12 DST 2019*
 
 ## Installation 
