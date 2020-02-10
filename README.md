@@ -5,7 +5,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/sandeeprenjith/dnsblast)](https://goreportcard.com/report/github.com/sandeeprenjith/dnsblast)
 
 
-*Tue Oct 29 21:37:12 DST 2019*
+*Mon Feb 10 17:18:41 DST 2020*
 
 ## Installation 
 
@@ -71,7 +71,7 @@ Usage of dnsblast:
   -len int
         Duration to run load (default 60)
   -port string
-        The destination UDP port (default "53")
+        The destination UDP port (default "853")
   -rate int
         Packets per second to send (default 100)
   -server string
