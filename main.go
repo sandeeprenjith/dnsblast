@@ -67,16 +67,20 @@ func send_qry(server string, rate int, port string, duration int, threads int, l
 		for x := 1; x < len(RTT); x++ {
 			sumRTT = sumRTT + RTT[x]
 		}
-		avgRTT = sumRTT / time.Duration(len(RTT))
+		if sumRTT == 0 {
+			log.Println("No usable results")
+		} else {
+			avgRTT = sumRTT / time.Duration(len(RTT))
 
-		//Send results to a chanel in the type Result
-		result.QPS = QPS
-		result.RTT = avgRTT
-		resultset = append(resultset, result)
+			//Send results to a chanel in the type Result
+			result.QPS = QPS
+			result.RTT = avgRTT
+			resultset = append(resultset, result)
 
-		log.Println("QPS: ", QPS, " Latency: ", avgRTT) // Print result per iteration ( minumum rate times/sec)
-		QPS = 0                                         // Reinitialize QPS for next iteration
-		RTT = []time.Duration{time.Duration(0)}         // Reinitialize latency array for next iteration
+			log.Println("QPS: ", QPS, " Latency: ", avgRTT) // Print result per iteration ( minumum rate times/sec)
+			QPS = 0                                         // Reinitialize QPS for next iteration
+			RTT = []time.Duration{time.Duration(0)}         // Reinitialize latency array for next iteration
+		}
 	}
 	total_qps = 0
 	total_avg_rtt = 0
