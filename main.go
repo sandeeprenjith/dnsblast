@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/cheggaaa/pb/v3"
 	"github.com/google/goterm/term"
 	"github.com/olekukonko/tablewriter"
 	"github.com/sandeeprenjith/dnsblast/qry"
@@ -12,11 +13,6 @@ import (
 	"strings"
 	"time"
 )
-
-// For debug
-//func checkpoint(n int) {
-//	log.Println("Checkpoint: ", n)
-//}
 
 // Struct for the data returned by the send_query function (to channel).
 // the data includes sum of QPS and average round trip time.
@@ -31,8 +27,7 @@ func send_qry(server string, rate int, port string, duration int, threads int, l
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println(term.Redf("Looks like the program paniced."))
-			fmt.Println("This usually happens due issues with server responses.")
-			fmt.Println("(If you want to debug)")
+			fmt.Println(term.BWhitef("This usually happens due issues with server responses.(If you want to debug)"))
 		}
 	}()
 
@@ -52,17 +47,15 @@ func send_qry(server string, rate int, port string, duration int, threads int, l
 	total_qps = 0
 	total_avg_rtt = 0
 	avg_avg_rtt = 0
+	num := rate / threads
 
 mainLoop:
 	// The eternal for loop runs till program is killed by the ender ticker
-
 	for {
 		select { //Break main loop after duration expires
 		case <-ender:
 			break mainLoop
 		default:
-			num := rate / threads
-			//		print(string(num))
 			responses := make(chan qry.Response, num) // Channel to hold DNS responses
 			// loop which runs for a maximum of "-rate" specified by user.
 
@@ -172,6 +165,21 @@ func main() {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
+
+	num := *rate / *threads
+	//Priming the cache for cached response testing
+	if *chr == 100 {
+		fmt.Println("Putting entries in cache; hoping no 0 ttl responses")
+		bar := pb.StartNew(num)
+		for i := 1; i <= num; i++ {
+			unused := make(chan qry.Response, num)
+			qname := qry.PQname(3, i)
+			qry.SimpleQuery(*server, qport, qname, "A", unused, proto)
+			bar.Increment()
+		}
+		bar.Finish()
+	}
+
 	fmt.Println(" ")
 	fmt.Println(term.Cyanf("EXECUTING TEST"))
 	fmt.Println(term.Yellowf("+-----------------------------------------------------------+"))
