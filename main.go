@@ -25,7 +25,7 @@ type Results struct {
 	RTT time.Duration
 }
 
-func send_qry(server string, rate int, port string, duration int, threads int, limiter <-chan time.Time, res chan Results, ender <-chan time.Time, proto string) {
+func send_qry(server string, rate int, port string, duration int, threads int, limiter <-chan time.Time, res chan Results, ender <-chan time.Time, proto string, chr int) {
 
 	//handling panic
 	defer func() {
@@ -38,7 +38,7 @@ func send_qry(server string, rate int, port string, duration int, threads int, l
 
 	var QPS int             // Variable to hold QPS
 	var RTT []time.Duration // Variable to hold Latency
-
+	var qname string
 	var result Results
 	var resultset []Results
 	var sumRTT time.Duration // Varable to hold sum of latency values
@@ -72,7 +72,13 @@ mainLoop:
 				case <-limiter:
 					break rateLoop
 				default:
-					qname := qry.PQname(3, i)                                   // Creating a predictable Qname
+					if chr == 100 {
+						// Creating a predictable Qname
+						qname = qry.PQname(3, i)
+					} else if chr == 0 {
+						// Creating an unpredictable Qname
+						qname = qry.RQname(3)
+					}
 					qry.SimpleQuery(server, port, qname, "A", responses, proto) // Query the specified server with the predictable qname
 				}
 			}
@@ -130,15 +136,27 @@ func main() {
 	duration := flag.Int("l", 60, "Duration to run load")
 	threads := flag.Int("t", 4, "Number of threads")
 	protocol := flag.String("proto", "udp", "Protocol to use for DNS queries ( udp, tcp, tls)")
+	chr := flag.Int("c", 0, "Value 0 for random QNAMES (for uncached responses), 100 for Predictable QNAMES (for cached responses)")
 	flag.Parse()
 
 	var proto string
+	var test string
+
 	if *protocol == "udp" {
 		proto = "udp"
 	} else if *protocol == "tcp" {
 		proto = "tcp"
 	} else if *protocol == "tls" {
 		proto = "tcp-tls"
+	}
+
+	if *chr == 0 {
+		test = "Uncached Responses"
+	} else if *chr == 100 {
+		test = "Cached Responses"
+	} else {
+		fmt.Println("Value of '-c' flag must be either 0 or 100")
+		os.Exit(1)
 	}
 
 	// Just in case user specifies DNS over TLS but does not modify port
@@ -168,7 +186,7 @@ func main() {
 	ender := time.Tick(time.Duration(*duration) * time.Second)
 	// Create as many goroutines as specified by "-t" argument
 	for i := 1; i <= *threads; i++ {
-		go send_qry(*server, *rate, qport, *duration, *threads, limiter, res, ender, proto)
+		go send_qry(*server, *rate, qport, *duration, *threads, limiter, res, ender, proto, *chr)
 	}
 	sleepval := *duration + 1
 	time.Sleep(time.Duration(sleepval) * time.Second)
@@ -181,10 +199,12 @@ func main() {
 		total_qps = total_qps + each_res.QPS
 		total_rtt = total_rtt + each_res.RTT
 	}
+
 	// Formatting final results into an ascii table
 	// Formatting user given data to print
 	tabledata := [][]string{
 		[]string{"Target Server", *protocol + "://" + *server + ":" + qport},
+		[]string{"Test", test},
 		[]string{"Send Rate", strconv.Itoa(*rate) + " Queries/Sec"},
 		[]string{"Threads", strconv.Itoa(*threads)},
 		[]string{"Duration of test", strconv.Itoa(*duration) + " Sec"},
@@ -197,7 +217,7 @@ func main() {
 	for _, dat := range tabledata {
 		table.Append(dat)
 	}
-	time.Sleep(time.Second)
+	time.Sleep(3 * time.Second)
 	fmt.Println(term.Yellowf("+-----------------------------------------------------------+"))
 	fmt.Println(" ")
 	fmt.Println(term.Cyanf("  REPORT"))
