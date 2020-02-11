@@ -3,9 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/google/goterm/term"
+	"github.com/olekukonko/tablewriter"
 	"github.com/sandeeprenjith/dnsblast/qry"
 	"log"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -78,7 +81,7 @@ mainLoop:
 				sumRTT = sumRTT + RTT[x]
 			}
 			if sumRTT == 0 {
-				log.Println("No usable results")
+				log.Println(term.Redf("No usable results"))
 			} else {
 				avgRTT = sumRTT / time.Duration(len(RTT))
 
@@ -87,9 +90,9 @@ mainLoop:
 				result.RTT = avgRTT
 				resultset = append(resultset, result)
 
-				log.Println("QPS/Thread: ", QPS, " Latency: ", avgRTT) // Print result per iteration ( minumum rate times/sec)
-				QPS = 0                                                // Reinitialize QPS for next iteration
-				RTT = []time.Duration{time.Duration(0)}                // Reinitialize latency array for next iteration
+				log.Println(term.Cyanf("QPS/Thread: "), term.Yellowf(strconv.Itoa(QPS)), term.Cyanf(" Latency: "), term.Yellowf(avgRTT.String())) // Print result per iteration ( minumum rate times/sec)
+				QPS = 0                                                                                                                           // Reinitialize QPS for next iteration
+				RTT = []time.Duration{time.Duration(0)}                                                                                           // Reinitialize latency array for next iteration
 			}
 		}
 	}
@@ -120,6 +123,23 @@ func main() {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
+	// Formatting user given data to print
+	user_inp := [][]string{
+		[]string{"Target Server", *server + ":" + *port},
+		[]string{"Send Rate", strconv.Itoa(*rate) + " Queries/Sec"},
+		[]string{"Threads", strconv.Itoa(*threads)},
+		[]string{"Duration of test", strconv.Itoa(*duration) + " Sec"},
+	}
+	table1 := tablewriter.NewWriter(os.Stdout)
+	for _, ui := range user_inp {
+		table1.Append(ui)
+	}
+	table1.SetAlignment(tablewriter.ALIGN_LEFT)
+	table1.Render() // Display info as a table
+	fmt.Println(" ")
+	fmt.Println("EXECUTING TEST")
+	fmt.Println("+-----------------------------------------------------------+")
+
 	limiter := time.Tick(time.Second) // Ticker used for rate limiting packets per second
 	res := make(chan Results, *threads)
 
@@ -143,8 +163,19 @@ func main() {
 		total_qps = total_qps + each_res.QPS
 		total_rtt = total_rtt + each_res.RTT
 	}
-	fmt.Println("#################################################")
-	fmt.Println("Final QPS:", total_qps, "Final RTT:", total_rtt)
-	fmt.Println("#################################################")
+	// Formatting final results into an ascii table
+	tabledata := [][]string{
+		[]string{term.Yellowf(strconv.Itoa(total_qps)), term.Yellowf(total_rtt.String())},
+	}
+	table2 := tablewriter.NewWriter(os.Stdout)
+	table2.SetHeader([]string{"Average Queries/Sec", "Average Latency"})
+	for _, dat := range tabledata {
+		table2.Append(dat)
+	}
+
+	fmt.Println("+-----------------------------------------------------------+")
+	fmt.Println(" ")
+	table2.Render()
+
 	os.Exit(0)
 }

@@ -1,6 +1,7 @@
 package qry
 
 import (
+	"github.com/google/goterm/term"
 	"github.com/miekg/dns"
 	"log"
 	"net"
@@ -28,7 +29,7 @@ func SimpleQuery(server string, port string, qname string, qtype string, respons
 	c.Net = "tcp-tls"
 	ans, rtt, err := c.Exchange(question, s_server)
 	if err != nil {
-		log.Println(err)
+		log.Println(term.Redf(err.Error()))
 	} else {
 		var R Response
 		R.Rcode = Rcode(ans.Rcode)
