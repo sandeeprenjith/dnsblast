@@ -1,5 +1,5 @@
 v = v1
-ALL := linux32 linux64 linuxarm linuxarm64 win32 win64 darwin32 darwin64 move
+ALL := linux32 linux64 linuxarm linuxarm64 darwin32 darwin64 move
 all: $(ALL)
 
 linux32:
@@ -18,14 +18,14 @@ linuxarm64:
 	GOOS=linux GOARCH=arm64 go build -o dnsblast
 	tar -cvzf dnsblast-$(v)-linux-arm64.tar.gz dnsblast
 	rm dnsblast
-win32:
-	GOOS=windows GOARCH=386 go build -o dnsblast.exe
-	tar -cvzf dnsblast-$(v)-windows-386.tar.gz dnsblast.exe
-	rm dnsblast.exe
-win64:
-	GOOS=windows GOARCH=amd64 go build -o dnsblast.exe
-	tar -cvzf dnsblast-$(v)-windows-amd64.tar.gz dnsblast.exe
-	rm dnsblast.exe
+#win32:
+#	GOOS=windows GOARCH=386 go build -o dnsblast.exe
+#	tar -cvzf dnsblast-$(v)-windows-386.tar.gz dnsblast.exe
+#	rm dnsblast.exe
+#win64:
+#	GOOS=windows GOARCH=amd64 go build -o dnsblast.exe
+#	tar -cvzf dnsblast-$(v)-windows-amd64.tar.gz dnsblast.exe
+#	rm dnsblast.exe
 darwin32:
 	GOOS=darwin GOARCH=386 go build -o dnsblast
 	tar -cvzf dnsblast-$(v)-darwin-386.tar.gz dnsblast

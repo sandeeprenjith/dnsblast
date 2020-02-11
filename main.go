@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -24,7 +25,17 @@ type Results struct {
 	RTT time.Duration
 }
 
-func send_qry(server string, rate int, port string, duration int, threads int, limiter <-chan time.Time, res chan Results, ender <-chan time.Time) {
+func send_qry(server string, rate int, port string, duration int, threads int, limiter <-chan time.Time, res chan Results, ender <-chan time.Time, proto string) {
+
+	//handling panic
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println(term.Redf("Looks like the program paniced."))
+			fmt.Println("This usually happens due issues with server responses.")
+			fmt.Println("(If you want to debug)")
+		}
+	}()
+
 	var QPS int             // Variable to hold QPS
 	var RTT []time.Duration // Variable to hold Latency
 
@@ -61,8 +72,8 @@ mainLoop:
 				case <-limiter:
 					break rateLoop
 				default:
-					qname := qry.PQname(3, i)                            // Creating a predictable Qname
-					qry.SimpleQuery(server, port, qname, "A", responses) // Query the specified server with the predictable qname
+					qname := qry.PQname(3, i)                                   // Creating a predictable Qname
+					qry.SimpleQuery(server, port, qname, "A", responses, proto) // Query the specified server with the predictable qname
 				}
 			}
 			close(responses)
@@ -115,30 +126,37 @@ func main() {
 	// Getting input from user
 	server := flag.String("s", "", "[Required] The address of the target server")
 	rate := flag.Int("r", 100, "Packets per second to send")
-	port := flag.String("p", "853", "The destination UDP port")
+	port := flag.String("p", "53", "The destination UDP port")
 	duration := flag.Int("l", 60, "Duration to run load")
 	threads := flag.Int("t", 4, "Number of threads")
+	protocol := flag.String("proto", "udp", "Protocol to use for DNS queries ( udp, tcp, tls)")
 	flag.Parse()
+
+	var proto string
+	if *protocol == "udp" {
+		proto = "udp"
+	} else if *protocol == "tcp" {
+		proto = "tcp"
+	} else if *protocol == "tls" {
+		proto = "tcp-tls"
+	}
+
+	// Just in case user specifies DNS over TLS but does not modify port
+	qport := *port
+	if proto == "tcp-tls" {
+		if *port == "53" {
+			qport = "853"
+		} else {
+			qport = *port
+		}
+	}
 	if *server == "" {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
-	// Formatting user given data to print
-	user_inp := [][]string{
-		[]string{"Target Server", *server + ":" + *port},
-		[]string{"Send Rate", strconv.Itoa(*rate) + " Queries/Sec"},
-		[]string{"Threads", strconv.Itoa(*threads)},
-		[]string{"Duration of test", strconv.Itoa(*duration) + " Sec"},
-	}
-	table1 := tablewriter.NewWriter(os.Stdout)
-	for _, ui := range user_inp {
-		table1.Append(ui)
-	}
-	table1.SetAlignment(tablewriter.ALIGN_LEFT)
-	table1.Render() // Display info as a table
 	fmt.Println(" ")
-	fmt.Println("EXECUTING TEST")
-	fmt.Println("+-----------------------------------------------------------+")
+	fmt.Println(term.Cyanf("EXECUTING TEST"))
+	fmt.Println(term.Yellowf("+-----------------------------------------------------------+"))
 
 	limiter := time.Tick(time.Second) // Ticker used for rate limiting packets per second
 	res := make(chan Results, *threads)
@@ -150,7 +168,7 @@ func main() {
 	ender := time.Tick(time.Duration(*duration) * time.Second)
 	// Create as many goroutines as specified by "-t" argument
 	for i := 1; i <= *threads; i++ {
-		go send_qry(*server, *rate, *port, *duration, *threads, limiter, res, ender)
+		go send_qry(*server, *rate, qport, *duration, *threads, limiter, res, ender, proto)
 	}
 	sleepval := *duration + 1
 	time.Sleep(time.Duration(sleepval) * time.Second)
@@ -164,18 +182,26 @@ func main() {
 		total_rtt = total_rtt + each_res.RTT
 	}
 	// Formatting final results into an ascii table
+	// Formatting user given data to print
 	tabledata := [][]string{
-		[]string{term.Yellowf(strconv.Itoa(total_qps)), term.Yellowf(total_rtt.String())},
+		[]string{"Target Server", *protocol + "://" + *server + ":" + qport},
+		[]string{"Send Rate", strconv.Itoa(*rate) + " Queries/Sec"},
+		[]string{"Threads", strconv.Itoa(*threads)},
+		[]string{"Duration of test", strconv.Itoa(*duration) + " Sec"},
+		[]string{"Protocol", strings.ToUpper(proto)},
+		[]string{"Average Queries/Sec", term.Yellowf(strconv.Itoa(total_qps))},
+		[]string{"Average Latency", term.Yellowf(total_rtt.String())},
 	}
-	table2 := tablewriter.NewWriter(os.Stdout)
-	table2.SetHeader([]string{"Average Queries/Sec", "Average Latency"})
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
 	for _, dat := range tabledata {
-		table2.Append(dat)
+		table.Append(dat)
 	}
-
-	fmt.Println("+-----------------------------------------------------------+")
+	time.Sleep(time.Second)
+	fmt.Println(term.Yellowf("+-----------------------------------------------------------+"))
 	fmt.Println(" ")
-	table2.Render()
+	fmt.Println(term.Cyanf("  REPORT"))
+	table.Render()
 
 	os.Exit(0)
 }
