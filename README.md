@@ -4,6 +4,12 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/sandeeprenjith/dnsblast)](https://goreportcard.com/report/github.com/sandeeprenjith/dnsblast)
 
+| Currently Supported Protocols |
+| ----------------------------- |
+| UDP DNS                      	|
+| TCP DNS                      	|
+| TCP DNS over TLS             	|
+
 
 *Mon Feb 10 17:18:41 DST 2020*
 
@@ -48,8 +54,6 @@ builds
 ├ dnsblast-v1-linux-amd64.tar.gz
 ├ dnsblast-v1-linux-arm.tar.gz
 ├ dnsblast-v1-linux-arm64.tar.gz
-├ dnsblast-v1-windows-386.tar.gz
-└ dnsblast-v1-windows-amd64.tar.gz
 
 ```
 The archives contain the executable for the platform which the name of the archive suggests.
@@ -57,25 +61,28 @@ The archives contain the executable for the platform which the name of the archi
 ```
 $ tar -tf builds/dnsblast-v1-linux-386.tar.gz
 dnsblast
-$ tar -tf builds/dnsblast-v1-windows-amd64.tar.gz
-dnsblast.exe
 ```
 
 
 ## Usage
 
 ```
-
-$ dnsblast -h
-Usage of dnsblast:
-  -len int
+$ ./dnsblast -h
+Usage of ./dnsblast:
+  -c int
+        Value 0 for random QNAMES (for uncached responses), 100 for Predictable QNAMES (for cached responses)
+  -l int
         Duration to run load (default 60)
-  -port string
-        The destination UDP port (default "853")
-  -rate int
+  -p string
+        The destination UDP port (default "53")
+  -proto string
+        Protocol to use for DNS queries ( udp, tcp, tls) (default "udp")
+  -r int
         Packets per second to send (default 100)
-  -server string
-        The address of the target server (default "127.0.0.1")
+  -s string
+        [Required] The address of the target server
+  -t int
+        Number of threads (default 4)
 
 ```
 
