@@ -90,16 +90,29 @@ Usage of ./dnsblast:
 
 ```
 
-$ dnsblast -s 192.168.130.9 -r 3000 -l 10
-2019/11/14 14:58:55 QPS:  1858  Latency:  237.799µs
-2019/11/14 14:58:56 QPS:  1858  Latency:  236.285µs
-2019/11/14 14:58:57 QPS:  1847  Latency:  233.041µs
-2019/11/14 14:58:58 QPS:  1881  Latency:  232.893µs
-2019/11/14 14:58:59 QPS:  1867  Latency:  233.41µs
-2019/11/14 14:59:00 QPS:  1866  Latency:  232.374µs
-2019/11/14 14:59:01 QPS:  1880  Latency:  229.484µs
-2019/11/14 14:59:02 QPS:  1882  Latency:  230.578µs
-2019/11/14 14:59:03 QPS:  1810  Latency:  237.021µs
+$ ./dnsblast -s 192.168.130.9 -r 100 -t 1 -c 100 -proto tls -l 5
+Putting entries in cache; hoping no 0 ttl responses
+100 / 100 [-------------------------------------------------------] 100.00% 24 p/s
 
+EXECUTING TEST
++-----------------------------------------------------------+
+2020/02/13 22:35:37 QPS/Thread:  51  Latency:  6.645784ms
+2020/02/13 22:35:38 QPS/Thread:  81  Latency:  8.286109ms
+2020/02/13 22:35:39 QPS/Thread:  76  Latency:  12.941233ms
+2020/02/13 22:35:40 QPS/Thread:  79  Latency:  15.883037ms
+2020/02/13 22:35:41 QPS/Thread:  71  Latency:  21.37718ms
++-----------------------------------------------------------+
+
+  REPORT
++---------------------+-------------------------+
+| Target Server       | tls://192.168.130.9:853 |
+| Test                | Cached Responses        |
+| Send Rate           | 100 Queries/Sec         |
+| Threads             | 1                       |
+| Duration of test    | 5 Sec                   |
+| Protocol            | TCP-TLS                 |
+| Average Queries/Sec | 71                      |
+| Average Latency     | 13.026668ms             |
++---------------------+-------------------------+
 ```
 
