@@ -88,6 +88,8 @@ Usage of ./dnsblast:
 
 ## Sample Output
 
+> Tested against coredns running DNS over TLS with errata plugin configured to give fake responses.
+
 ```
 
 $ ./dnsblast -s 192.168.130.9 -r 100 -t 1 -c 100 -proto tls -l 5
