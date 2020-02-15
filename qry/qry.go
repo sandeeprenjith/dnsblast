@@ -16,7 +16,7 @@ func SimpleQuery(server string, port string, qname string, qtype string, respons
 	question.SetQuestion(dns.Fqdn(qname), qrytype)
 	c := new(dns.Client)
 	c.Dialer = &net.Dialer{
-		Timeout: 2 * time.Second,
+		Timeout: 5 * time.Second,
 	}
 	c.DialTimeout = 2 * time.Second
 	c.Net = proto
