@@ -88,7 +88,7 @@ Usage of ./dnsblast:
 
 ## Sample Output
 
-> Tested against coredns running DNS over TLS with erratic plugin configured to give fake responses.
+> Tested against [Coredns](https://coredns.io) running DNS over TLS with erratic plugin configured to give fake responses.
 
 ```
 
