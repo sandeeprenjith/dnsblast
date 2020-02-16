@@ -117,4 +117,6 @@ EXECUTING TEST
 | Average Latency     | 13.026668ms             |
 +---------------------+-------------------------+
 ```
+## Credit where due
 
+* https://github.com/miekg/dns
