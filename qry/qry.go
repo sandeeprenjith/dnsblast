@@ -10,7 +10,7 @@ import (
 
 // Send a single DNS query
 func SimpleQuery(server string, port string, qname string, qtype string, responses chan Response, proto string) {
-	s_server := server + ":" + port
+	s_server := net.JoinHostPort(server, port)
 	qrytype := Qtype(qtype)
 	question := new(dns.Msg)
 	question.SetQuestion(dns.Fqdn(qname), qrytype)
@@ -18,7 +18,7 @@ func SimpleQuery(server string, port string, qname string, qtype string, respons
 	c.Dialer = &net.Dialer{
 		Timeout: 5 * time.Second,
 	}
-	c.DialTimeout = 2 * time.Second
+	c.DialTimeout = 5 * time.Second
 	c.Net = proto
 	ans, rtt, err := c.Exchange(question, s_server)
 	if err != nil {
