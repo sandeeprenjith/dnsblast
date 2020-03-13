@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"github.com/cheggaaa/pb/v3"
@@ -8,6 +9,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 	"github.com/sandeeprenjith/dnsblast/qry"
 	"log"
+	"math/rand"
 	"os"
 	"strconv"
 	"strings"
@@ -21,7 +23,7 @@ type Results struct {
 	RTT time.Duration
 }
 
-func send_qry(server string, rate int, port string, duration int, threads int, limiter <-chan time.Time, res chan Results, ender <-chan time.Time, proto string, chr int) {
+func send_qry(qnamelist []string, server string, rate int, port string, duration int, threads int, limiter <-chan time.Time, res chan Results, ender <-chan time.Time, proto string, chr int) {
 
 	//handling panic
 	defer func() {
@@ -65,12 +67,17 @@ mainLoop:
 				case <-limiter:
 					break rateLoop
 				default:
-					if chr == 100 {
-						// Creating a predictable Qname
-						qname = qry.PQname(3, i)
-					} else if chr == 0 {
-						// Creating an unpredictable Qname
-						qname = qry.RQname(3)
+					if len(qnamelist) == 0 {
+						if chr == 100 {
+							// Creating a predictable Qname
+							qname = qry.PQname(3, i)
+						} else if chr == 0 {
+							// Creating an unpredictable Qname
+							qname = qry.RQname(3)
+						}
+					} else {
+						rand.Seed(time.Now().UnixNano())
+						qname = qnamelist[rand.Intn(len(qnamelist))]
 					}
 					qry.SimpleQuery(server, port, qname, "A", responses, proto) // Query the specified server with the predictable qname
 				}
@@ -129,11 +136,27 @@ func main() {
 	duration := flag.Int("l", 60, "Duration to run load")
 	threads := flag.Int("t", 4, "Number of threads")
 	protocol := flag.String("proto", "udp", "Protocol to use for DNS queries ( udp, tcp, tls)")
+	infile := flag.String("f", "", "Input file with query names")
 	chr := flag.Int("c", 0, "Value 0 for random QNAMES (for uncached responses), 100 for Predictable QNAMES (for cached responses)")
 	flag.Parse()
 
 	var proto string
 	var test string
+	var qnamelist []string // Variable to store qnames from query file
+
+	if *infile != "" {
+		//Handle query names from file
+		inFile, err := os.Open(*infile)
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+		defer inFile.Close()
+		scanner := bufio.NewScanner(inFile)
+		for scanner.Scan() {
+			qnamelist = append(qnamelist, scanner.Text())
+		}
+	}
 
 	if *protocol == "udp" {
 		proto = "udp"
@@ -151,7 +174,10 @@ func main() {
 		fmt.Println("Value of '-c' flag must be either 0 or 100")
 		os.Exit(1)
 	}
-
+	// Changing test name when using input files
+	if *infile != "" {
+		test = "Queries from file"
+	}
 	// Just in case user specifies DNS over TLS but does not modify port
 	qport := *port
 	if proto == "tcp-tls" {
@@ -194,7 +220,7 @@ func main() {
 	ender := time.Tick(time.Duration(*duration) * time.Second)
 	// Create as many goroutines as specified by "-t" argument
 	for i := 1; i <= *threads; i++ {
-		go send_qry(*server, *rate, qport, *duration, *threads, limiter, res, ender, proto, *chr)
+		go send_qry(qnamelist, *server, *rate, qport, *duration, *threads, limiter, res, ender, proto, *chr)
 	}
 	sleepval := *duration + 1
 	time.Sleep(time.Duration(sleepval) * time.Second)
