@@ -29,7 +29,6 @@ func send_qry(qnamelist []string, server string, rate int, port string, duration
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println(term.Redf("Looks like the program paniced."))
-			fmt.Println(term.BWhitef("This usually happens due issues with server responses.(If you want to debug)"))
 		}
 	}()
 
@@ -121,6 +120,13 @@ mainLoop:
 		os.Exit(1)
 	}
 	qps_denominator = len(resultset) / threads
+
+	//Handling zero division panic in a way that does not affect the final result
+	if qps_denominator == 0 {
+		qps_denominator = 1
+		fmt.Println(term.Redf("A thread ran into an issue. Consider reducing the number of threads"))
+
+	}
 	avg_total_qps = total_qps / qps_denominator
 	avg_avg_rtt = total_avg_rtt / time.Duration(len(resultset))
 	final_results.QPS = avg_total_qps
