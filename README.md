@@ -11,7 +11,13 @@
 | TCP DNS over TLS             	|
 
 
-*Mon Feb 10 17:18:41 DST 2020*
+## New Features
+
+*Sat Mar 14 00:28:50 DST 2020*
+
+* IPv6 Support
+* Generate load using query names from a query file. The file file should have one FQDN per line
+
 
 ## Installation 
 
@@ -67,10 +73,12 @@ dnsblast
 ## Usage
 
 ```
-$ ./dnsblast -h
-Usage of ./dnsblast:
+
+$ ./dnsblast
   -c int
         Value 0 for random QNAMES (for uncached responses), 100 for Predictable QNAMES (for cached responses)
+  -f string
+        Input file with query names
   -l int
         Duration to run load (default 60)
   -p string
