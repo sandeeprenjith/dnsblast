@@ -98,7 +98,45 @@ $ ./dnsblast
 
 ## Sample Output
 
+# DNS (UDP)
+
+> Tested against BIND configured to provide fake responses. 
+> Details of configuration available [here](fake-responders/Bind)
+
+```
+$ ./dnsblast -s 192.168.130.9 -r 40000 -q 200 -l 10
+
+EXECUTING TEST
++-----------------------------------------------------------+
+2020/03/15 03:45:26 QPS/Thread:  6000  Latency:  16.677117ms
+2020/03/15 03:45:27 QPS/Thread:  11800  Latency:  15.787841ms
+2020/03/15 03:45:28 QPS/Thread:  6400  Latency:  45.398035ms
+2020/03/15 03:45:29 QPS/Thread:  18400  Latency:  20.184322ms
+2020/03/15 03:45:30 QPS/Thread:  6200  Latency:  75.833313ms
+2020/03/15 03:45:31 QPS/Thread:  19000  Latency:  30.486501ms
+2020/03/15 03:45:32 QPS/Thread:  12000  Latency:  55.365939ms
+2020/03/15 03:45:33 QPS/Thread:  6000  Latency:  126.906884ms
+2020/03/15 03:45:34 QPS/Thread:  5800  Latency:  149.469651ms
+2020/03/15 03:45:35 QPS/Thread:  8400  Latency:  116.027951ms
++-----------------------------------------------------------+
+
+  REPORT
++---------------------+------------------------+
+| Target Server       | udp://192.168.130.9:53 |
+| Test                | Uncached Responses     |
+| Send Rate           | 40000 Queries/Sec      |
+| Threads             | 2                      |
+| Duration of test    | 10 Sec                 |
+| Protocol            | UDP                    |
+| Average Queries/Sec | 20933                  |
+| Average Latency     | 80.066453ms            |
++---------------------+------------------------+
+```
+
+### DNS over TLS
+
 > Tested against [Coredns](https://coredns.io) running DNS over TLS with erratic plugin configured to give fake responses.
+> Details on configuration available [here](fake-responders/Coredns)
 
 ```
 $ ./dnsblast -s 192.168.130.9 -l 10 -r 1000 -q 20 -proto tls -noverify
@@ -129,7 +167,6 @@ EXECUTING TEST
 | Average Latency     | 301.643311ms            |
 +---------------------+-------------------------+
 ```
-
 
 ## Credit where due
 
