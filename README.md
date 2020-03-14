@@ -98,7 +98,7 @@ $ ./dnsblast
 
 ## Sample Output
 
-# DNS (UDP)
+### DNS (UDP)
 
 > Tested against BIND configured to provide fake responses. 
 > Details of configuration available [here](fake-responders/Bind)
