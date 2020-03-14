@@ -1,0 +1,14 @@
+$TTL 86400;
+$ORIGIN .
+@	1D	IN	SOA ns1.	sandeep.renjith.gmail.com.	(
+		1;
+		3H;
+		15;
+		1w;
+		3h;
+		)
+
+	IN NS ns1.	;
+ns1.	IN A 192.168.130.9;
+*	IN A 172.21.21.21;
+
