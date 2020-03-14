@@ -13,6 +13,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -23,7 +24,7 @@ type Results struct {
 	RTT time.Duration
 }
 
-func send_qry(qnamelist []string, server string, rate int, port string, duration int, threads int, limiter <-chan time.Time, res chan Results, ender <-chan time.Time, proto string, chr int) {
+func send_qry(qnamelist []string, server string, rate int, port string, duration int, threads int, limiter <-chan time.Time, res chan Results, ender <-chan time.Time, proto string, chr int, concurrent_queries int) {
 
 	//handling panic
 	defer func() {
@@ -45,6 +46,7 @@ func send_qry(qnamelist []string, server string, rate int, port string, duration
 	var avg_total_qps int
 	var final_results Results
 	var qps_denominator int
+	var wg sync.WaitGroup
 	total_qps = 0
 	total_avg_rtt = 0
 	avg_avg_rtt = 0
@@ -78,7 +80,11 @@ mainLoop:
 						rand.Seed(time.Now().UnixNano())
 						qname = qnamelist[rand.Intn(len(qnamelist))]
 					}
-					qry.SimpleQuery(server, port, qname, "A", responses, proto) // Query the specified server with the predictable qname
+					wg.Add(concurrent_queries)
+					for conc := 1; conc <= concurrent_queries; conc++ {
+						go qry.SimpleQuery(server, port, qname, "A", responses, proto, &wg) // Query the specified server with the predictable qname
+					}
+					wg.Wait()
 				}
 			}
 			close(responses)
@@ -144,11 +150,13 @@ func main() {
 	protocol := flag.String("proto", "udp", "Protocol to use for DNS queries ( udp, tcp, tls)")
 	infile := flag.String("f", "", "Input file with query names")
 	chr := flag.Int("c", 0, "Value 0 for random QNAMES (for uncached responses), 100 for Predictable QNAMES (for cached responses)")
+	concurrent_queries := flag.Int("q", 100, "Concurrent queries to send")
 	flag.Parse()
 
 	var proto string
 	var test string
 	var qnamelist []string // Variable to store qnames from query file
+	var wg sync.WaitGroup
 
 	if *infile != "" {
 		//Handle query names from file
@@ -206,7 +214,9 @@ func main() {
 		for i := 1; i <= num; i++ {
 			unused := make(chan qry.Response, num)
 			qname := qry.PQname(3, i)
-			qry.SimpleQuery(*server, qport, qname, "A", unused, proto)
+			wg.Add(1)
+			go qry.SimpleQuery(*server, qport, qname, "A", unused, proto, &wg)
+			wg.Wait()
 			bar.Increment()
 		}
 		bar.Finish()
@@ -226,7 +236,7 @@ func main() {
 	ender := time.Tick(time.Duration(*duration) * time.Second)
 	// Create as many goroutines as specified by "-t" argument
 	for i := 1; i <= *threads; i++ {
-		go send_qry(qnamelist, *server, *rate, qport, *duration, *threads, limiter, res, ender, proto, *chr)
+		go send_qry(qnamelist, *server, *rate, qport, *duration, *threads, limiter, res, ender, proto, *chr, *concurrent_queries)
 	}
 	sleepval := *duration + 1
 	time.Sleep(time.Duration(sleepval) * time.Second)

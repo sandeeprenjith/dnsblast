@@ -5,11 +5,12 @@ import (
 	"github.com/miekg/dns"
 	"log"
 	"net"
+	"sync"
 	"time"
 )
 
 // Send a single DNS query
-func SimpleQuery(server string, port string, qname string, qtype string, responses chan Response, proto string) {
+func SimpleQuery(server string, port string, qname string, qtype string, responses chan Response, proto string, wg *sync.WaitGroup) {
 	s_server := net.JoinHostPort(server, port)
 	qrytype := Qtype(qtype)
 	question := new(dns.Msg)
@@ -32,4 +33,5 @@ func SimpleQuery(server string, port string, qname string, qtype string, respons
 		R.Qtype = qtype
 		responses <- R
 	}
+	wg.Done()
 }
