@@ -1,0 +1,25 @@
+ . {
+        bind 192.168.130.9 dead:beef::2
+        cache  {
+                success 0 3600 3600
+        }
+        erratic {
+                delay 1 23ms
+                drop 0
+                }
+		log
+}
+ tls://.:853 {
+        bind 192.168.130.9 dead:beef::2
+		debug
+		tls coredns.pem coredns.key ca.pem
+        cache  {
+                success 0 3600 3600
+        }
+		
+        erratic {
+                delay 1 23ms
+                drop 0
+                }
+		log
+}
