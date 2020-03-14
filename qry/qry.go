@@ -1,6 +1,7 @@
 package qry
 
 import (
+	"crypto/tls"
 	"github.com/google/goterm/term"
 	"github.com/miekg/dns"
 	"log"
@@ -10,7 +11,14 @@ import (
 )
 
 // Send a single DNS query
-func SimpleQuery(server string, port string, qname string, qtype string, responses chan Response, proto string, wg *sync.WaitGroup) {
+func SimpleQuery(server string,
+	port string,
+	qname string,
+	qtype string,
+	responses chan Response,
+	proto string,
+	wg *sync.WaitGroup,
+	noverify bool) {
 	s_server := net.JoinHostPort(server, port)
 	qrytype := Qtype(qtype)
 	question := new(dns.Msg)
@@ -21,6 +29,11 @@ func SimpleQuery(server string, port string, qname string, qtype string, respons
 	}
 	c.DialTimeout = 5 * time.Second
 	c.Net = proto
+	if proto == "tcp-tls" {
+		var tlc tls.Config
+		tlc.InsecureSkipVerify = noverify
+		c.TLSConfig = &tlc
+	}
 	ans, rtt, err := c.Exchange(question, s_server)
 	if err != nil {
 		log.Println(term.Redf(err.Error()))

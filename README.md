@@ -73,7 +73,6 @@ dnsblast
 ## Usage
 
 ```
-
 $ ./dnsblast
   -c int
         Value 0 for random QNAMES (for uncached responses), 100 for Predictable QNAMES (for cached responses)
@@ -81,17 +80,20 @@ $ ./dnsblast
         Input file with query names
   -l int
         Duration to run load (default 60)
+  -noverify
+        Skip SSL verification ( to be used with '-proto tls')
   -p string
         The destination UDP port (default "53")
   -proto string
         Protocol to use for DNS queries ( udp, tcp, tls) (default "udp")
+  -q int
+        Concurrent queries to send (default 10)
   -r int
-        Packets per second to send (default 100)
+        Packets per second to send (default 1000)
   -s string
         [Required] The address of the target server
   -t int
-        Number of threads (default 4)
-
+        Number of threads (default 2)
 ```
 
 ## Sample Output
@@ -99,32 +101,36 @@ $ ./dnsblast
 > Tested against [Coredns](https://coredns.io) running DNS over TLS with erratic plugin configured to give fake responses.
 
 ```
-
-$ ./dnsblast -s 192.168.130.9 -r 100 -t 1 -c 100 -proto tls -l 5
-Putting entries in cache; hoping no 0 ttl responses
-100 / 100 [-------------------------------------------------------] 100.00% 24 p/s
+$ ./dnsblast -s 192.168.130.9 -l 10 -r 1000 -q 20 -proto tls -noverify
 
 EXECUTING TEST
 +-----------------------------------------------------------+
-2020/02/13 22:35:37 QPS/Thread:  51  Latency:  6.645784ms
-2020/02/13 22:35:38 QPS/Thread:  81  Latency:  8.286109ms
-2020/02/13 22:35:39 QPS/Thread:  76  Latency:  12.941233ms
-2020/02/13 22:35:40 QPS/Thread:  79  Latency:  15.883037ms
-2020/02/13 22:35:41 QPS/Thread:  71  Latency:  21.37718ms
+2020/03/15 03:24:37 QPS/Thread:  140  Latency:  84.2214ms
+2020/03/15 03:24:38 QPS/Thread:  300  Latency:  81.66225ms
+2020/03/15 03:24:39 QPS/Thread:  300  Latency:  114.151156ms
+2020/03/15 03:24:40 QPS/Thread:  300  Latency:  154.465046ms
+2020/03/15 03:24:41 QPS/Thread:  280  Latency:  213.839306ms
+2020/03/15 03:24:42 QPS/Thread:  300  Latency:  229.693182ms
+2020/03/15 03:24:43 QPS/Thread:  320  Latency:  272.623912ms
+2020/03/15 03:24:44 QPS/Thread:  300  Latency:  309.042142ms
+2020/03/15 03:24:45 QPS/Thread:  320  Latency:  350.795333ms
+2020/03/15 03:24:46 QPS/Thread:  160  Latency:  774.228763ms
 +-----------------------------------------------------------+
 
   REPORT
 +---------------------+-------------------------+
 | Target Server       | tls://192.168.130.9:853 |
-| Test                | Cached Responses        |
-| Send Rate           | 100 Queries/Sec         |
-| Threads             | 1                       |
-| Duration of test    | 5 Sec                   |
+| Test                | Uncached Responses      |
+| Send Rate           | 1000 Queries/Sec        |
+| Threads             | 2                       |
+| Duration of test    | 10 Sec                  |
 | Protocol            | TCP-TLS                 |
-| Average Queries/Sec | 71                      |
-| Average Latency     | 13.026668ms             |
+| Average Queries/Sec | 506                     |
+| Average Latency     | 301.643311ms            |
 +---------------------+-------------------------+
 ```
+
+
 ## Credit where due
 
 * https://github.com/miekg/dns
