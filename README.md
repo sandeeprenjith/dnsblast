@@ -10,6 +10,7 @@
 | TCP DNS                      	|
 | TCP DNS over TLS             	|
 
+## [Documentation](https://github.com/sandeeprenjith/dnsblast/wiki)
 
 ## New Features
 
@@ -17,6 +18,8 @@
 
 * IPv6 Support
 * Generate load using query names from a query file. The file file should have one FQDN per line
+* Configurable number of concurrent queries
+* Ability to disable certificate validation for DNS over TLS
 
 
 ## Installation 
