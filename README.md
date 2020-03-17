@@ -10,7 +10,9 @@
 | TCP DNS                      	|
 | TCP DNS over TLS             	|
 
-## [Documentation](https://github.com/sandeeprenjith/dnsblast/wiki)
+## Documentation
+
+* [Wiki](https://github.com/sandeeprenjith/dnsblast/wiki)
 
 ## New Features
 
