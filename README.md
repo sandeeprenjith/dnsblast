@@ -173,6 +173,41 @@ EXECUTING TEST
 +---------------------+-------------------------+
 ```
 
+### IPv6 
+
+```
+$ ./dnsblast -s dead:face::2 -r 500 -q 2 -proto tls -noverify  -l 10
+
+EXECUTING TEST
++-----------------------------------------------------------+
+2020/03/17 23:26:15 QPS/Thread:  36  Latency:  32.141583ms
+2020/03/17 23:26:16 QPS/Thread:  32  Latency:  70.730121ms
+2020/03/17 23:26:17 QPS/Thread:  114  Latency:  33.450903ms
+2020/03/17 23:26:18 QPS/Thread:  88  Latency:  57.15537ms
+2020/03/17 23:26:19 QPS/Thread:  88  Latency:  73.337146ms
+2020/03/17 23:26:20 QPS/Thread:  42  Latency:  182.624116ms
+2020/03/17 23:26:21 QPS/Thread:  34  Latency:  258.311857ms
+2020/03/17 23:26:22 QPS/Thread:  34  Latency:  292.833628ms
+2020/03/17 23:26:23 QPS/Thread:  36  Latency:  309.374108ms
+2020/03/17 23:26:24 QPS/Thread:  236  Latency:  54.491316ms
+2020/03/17 23:26:25 QPS/Thread:  88  Latency:  158.465191ms
+2020/03/17 23:26:26 QPS/Thread:  46  Latency:  328.005638ms
+2020/03/17 23:26:27 QPS/Thread:  44  Latency:  370.920222ms
++-----------------------------------------------------------+
+
+  REPORT
++---------------------+------------------------+
+| Target Server       | tls://dead:face::2:853 |
+| Test                | Uncached Responses     |
+| Send Rate           | 500 Queries/Sec        |
+| Threads             | 2                      |
+| Duration of test    | 10 Sec                 |
+| Protocol            | TCP-TLS                |
+| Average Queries/Sec | 196                    |
+| Average Latency     | 53.629597ms            |
++---------------------+------------------------+
+```
+
 ## Credit where due
 
 * https://github.com/miekg/dns
