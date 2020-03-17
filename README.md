@@ -12,7 +12,7 @@
 
 ## Documentation
 
-* [Wiki](https://github.com/sandeeprenjith/dnsblast/wiki)
+Take a look at the  [Wiki](https://github.com/sandeeprenjith/dnsblast/wiki) for testing instructions.
 
 ## New Features
 
