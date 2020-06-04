@@ -4,10 +4,6 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"github.com/cheggaaa/pb/v3"
-	"github.com/google/goterm/term"
-	"github.com/olekukonko/tablewriter"
-	"github.com/sandeeprenjith/dnsblast/qry"
 	"log"
 	"math/rand"
 	"os"
@@ -15,6 +11,11 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/cheggaaa/pb/v3"
+	"github.com/google/goterm/term"
+	"github.com/olekukonko/tablewriter"
+	"github.com/sandeeprenjith/dnsblast/qry"
 )
 
 // Struct for the data returned by the send_query function (to channel).
@@ -36,7 +37,8 @@ func send_qry(qnamelist []string,
 	proto string,
 	chr int,
 	concurrent_queries int,
-	noverify bool) {
+	noverify bool,
+	qtype string) {
 
 	//handling panic
 	defer func() {
@@ -94,7 +96,7 @@ mainLoop:
 					}
 					wg.Add(concurrent_queries)
 					for conc := 1; conc <= concurrent_queries; conc++ {
-						go qry.SimpleQuery(server, port, qname, "A", responses, proto, &wg, noverify) // Query the specified server with the predictable qname
+						go qry.SimpleQuery(server, port, qname, qtype, responses, proto, &wg, noverify) // Query the specified server with the predictable qname
 					}
 					wg.Wait()
 				}
@@ -164,6 +166,7 @@ func main() {
 	chr := flag.Int("c", 0, "Value 0 for random QNAMES (for uncached responses), 100 for Predictable QNAMES (for cached responses)")
 	concurrent_queries := flag.Int("q", 10, "Concurrent queries to send")
 	noverify := flag.Bool("noverify", false, "Skip SSL verification ( to be used with '-proto tls')")
+	qtype := flag.String("type", "A", "DNS query type")
 	flag.Parse()
 
 	var proto string
@@ -261,7 +264,8 @@ func main() {
 			proto,
 			*chr,
 			*concurrent_queries,
-			*noverify)
+			*noverify,
+			*qtype)
 	}
 	sleepval := *duration + 1
 	time.Sleep(time.Duration(sleepval) * time.Second)
